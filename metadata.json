@@ -1,5 +1,5 @@
 {
-  "name": "TraceAR",
+  "name": "TraceAnything",
   "description": "A web-based augmented reality tool for tracing images. Upload an image, overlay it on your camera feed, adjust transparency and size, and trace away.",
   "requestFramePermissions": [
     "camera"

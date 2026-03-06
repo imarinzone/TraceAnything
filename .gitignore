@@ -6,3 +6,16 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Capacitor
+# capacitor.config.json # Keep this if you use JSON config
+# capacitor.config.ts # Keep this
+
+# Android
+android/app/build/
+android/.gradle/
+android/local.properties
+android/*.iml
+android/.idea/
+android/captures/
+android/app/src/main/assets/public/

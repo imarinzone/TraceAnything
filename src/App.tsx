@@ -19,6 +19,7 @@ export default function App() {
   const [opacity, setOpacity] = useState(0.5);
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
   
   // New State
   const [filter, setFilter] = useState('none');
@@ -70,6 +71,7 @@ export default function App() {
       // Reset transformations on new image
       setScale(1);
       setRotation(0);
+      setPosition({ x: 0, y: 0 });
       setOpacity(0.5);
       setFilter('none');
       setIsLocked(false);
@@ -98,6 +100,12 @@ export default function App() {
             opacity={opacity}
             scale={scale}
             rotation={rotation}
+            position={position}
+            onTransformChange={(updates) => {
+              if (updates.scale !== undefined) setScale(updates.scale);
+              if (updates.rotation !== undefined) setRotation(updates.rotation);
+              if (updates.position !== undefined) setPosition(updates.position);
+            }}
             filter={filter}
             isLocked={isLocked}
           />
@@ -156,10 +164,7 @@ export default function App() {
           <Controls 
             opacity={opacity}
             setOpacity={setOpacity}
-            scale={scale}
-            setScale={setScale}
-            rotation={rotation}
-            setRotation={setRotation}
+            // Scale and Rotation removed from Controls props
             facingMode={facingMode}
             toggleCamera={toggleCamera}
             onImageUpload={handleImageUpload}

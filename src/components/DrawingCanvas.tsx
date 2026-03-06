@@ -45,7 +45,11 @@ export function DrawingCanvas({
     tempCanvas.width = canvas.width;
     tempCanvas.height = canvas.height;
     const tempCtx = tempCanvas.getContext('2d');
-    tempCtx?.drawImage(canvas, 0, 0);
+    try {
+      tempCtx?.drawImage(canvas, 0, 0);
+    } catch (e) {
+      // Ignore errors if canvas is empty or invalid
+    }
 
     // Resize
     canvas.width = width;
@@ -54,7 +58,11 @@ export function DrawingCanvas({
     // Restore content (scaled or centered? just 0,0 for now)
     const ctx = canvas.getContext('2d');
     if (ctx) {
-      ctx.drawImage(tempCanvas, 0, 0);
+      try {
+        ctx.drawImage(tempCanvas, 0, 0);
+      } catch (e) {
+        // Ignore errors
+      }
     }
   }, [width, height]);
 
