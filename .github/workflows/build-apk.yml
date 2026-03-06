@@ -1,0 +1,54 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Using Node 20 as it is standard
+
+      - name: Install NPM Dependencies
+        run: npm install
+
+      - name: Build Web Application
+        # This will create the 'dist' folder defined in your capacitor.config.ts
+        run: npm run build
+
+      - name: Sync Capacitor Android
+        # Syncing copies the built web assets into the Android native project
+        run: npx @capacitor/cli sync android
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17' # Android builds generally require Java 17 nowadays
+
+      - name: Grant execute permission for gradlew
+        working-directory: ./android
+        run: chmod +x gradlew
+
+      - name: Build Android Debug APK
+        working-directory: ./android
+        # Compiles the debug APK. Change to `assembleRelease` for production builds 
+        # (requires setting up Android keystore signing secrets in GitHub Actions).
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          # This is the default path to the APK generated from a debug build
+          path: android/app/build/outputs/apk/debug/app-debug.apk
