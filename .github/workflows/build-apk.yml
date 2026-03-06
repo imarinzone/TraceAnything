@@ -26,9 +26,12 @@ jobs:
         # This will create the 'dist' folder defined in your capacitor.config.ts
         run: npm run build
 
+      - name: Install Capacitor
+        run: npm install @capacitor/cli @capacitor/core @capacitor/android
+        
       - name: Sync Capacitor Android
         # Syncing copies the built web assets into the Android native project
-        run: npx @capacitor/cli sync android
+        run: npx cap sync android
 
       - name: Setup Java JDK
         uses: actions/setup-java@v4
