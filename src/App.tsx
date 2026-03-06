@@ -10,7 +10,7 @@ import { Controls } from './components/Controls';
 import { DrawingCanvas, DrawingCanvasRef } from './components/DrawingCanvas';
 import { LockSlider } from './components/LockSlider';
 import { motion, AnimatePresence } from 'motion/react';
-import { Upload, Download } from 'lucide-react';
+import { Upload, Download, PenTool } from 'lucide-react';
 import { logger } from './utils/logger';
 
 export default function App() {
@@ -156,9 +156,14 @@ export default function App() {
         {/* Header - Hide when locked */}
         {!isLocked && (
           <div className="p-4 bg-gradient-to-b from-black/80 to-transparent text-white flex justify-between items-start pointer-events-auto">
-            <div>
-              <h1 className="text-xl font-bold tracking-tight">TraceAR</h1>
-              <p className="text-xs text-gray-400">Overlay & Trace</p>
+            <div className="flex items-center gap-2">
+              <div className="bg-blue-600 p-1.5 rounded-lg">
+                <PenTool size={20} className="text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold tracking-tight">Trace Anything</h1>
+                <p className="text-xs text-gray-400">Overlay & Trace</p>
+              </div>
             </div>
             
             {!imageSrc && (
