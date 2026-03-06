@@ -37,7 +37,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '17' # Android builds generally require Java 17 nowadays
+          java-version: '21' # Android builds generally require Java 21 now
 
       - name: Grant execute permission for gradlew
         working-directory: ./android
