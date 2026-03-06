@@ -1,4 +1,4 @@
-import { Camera, Image as ImageIcon, Lock, Palette, Eraser, X, SlidersHorizontal, Wand2, Undo2, Redo2 } from 'lucide-react';
+import { Camera, Image as ImageIcon, Lock, Palette, Eraser, X, SlidersHorizontal, Wand2, Undo2, Redo2, RotateCcw } from 'lucide-react';
 import { ChangeEvent, useState } from 'react';
 import { logger } from '../utils/logger';
 import { motion, AnimatePresence } from 'motion/react';
@@ -76,13 +76,13 @@ export function Controls({
            {hasImage && (
             <button
               onClick={clearImage}
-              className="w-10 h-10 rounded-full bg-zinc-800 text-red-400 flex items-center justify-center shadow-lg border border-white/5 active:scale-95 transition-transform"
+              className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md text-red-400 flex items-center justify-center shadow-lg border border-white/10 active:scale-95 transition-transform"
               aria-label="Clear Image"
             >
               <X size={18} />
             </button>
           )}
-          <label className="w-12 h-12 rounded-2xl bg-zinc-800 text-white flex items-center justify-center shadow-lg border border-white/5 cursor-pointer active:scale-95 transition-transform">
+          <label className="w-12 h-12 rounded-2xl bg-black/30 backdrop-blur-md text-white flex items-center justify-center shadow-lg border border-white/10 cursor-pointer active:scale-95 transition-transform">
             <ImageIcon size={20} />
             <input 
               type="file" 
@@ -93,13 +93,13 @@ export function Controls({
           </label>
         </div>
 
-        {/* Center: Camera Toggle (Large FAB) */}
+        {/* Center: Camera Toggle (Smaller & Transparent) */}
         <button 
           onClick={toggleCamera}
-          className="w-14 h-14 rounded-2xl bg-white text-black flex items-center justify-center shadow-xl active:scale-95 transition-transform mb-2"
+          className="w-12 h-12 rounded-2xl bg-black/30 backdrop-blur-md text-white flex items-center justify-center shadow-xl border border-white/10 active:scale-95 transition-transform mb-0"
           aria-label="Toggle Camera"
         >
-          <Camera size={24} strokeWidth={2.5} />
+          <RotateCcw size={20} strokeWidth={2.5} />
         </button>
 
         {/* Right: Lock */}
@@ -107,7 +107,7 @@ export function Controls({
           {hasImage ? (
             <button 
               onClick={() => setIsLocked(true)}
-              className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+              className="w-12 h-12 rounded-2xl bg-black/30 backdrop-blur-md text-white flex items-center justify-center shadow-lg border border-white/10 active:scale-95 transition-transform"
               aria-label="Lock Controls"
             >
               <Lock size={20} />
