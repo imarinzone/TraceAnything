@@ -10,7 +10,7 @@ import { Controls } from './components/Controls';
 import { DrawingCanvas, DrawingCanvasRef } from './components/DrawingCanvas';
 import { LockSlider } from './components/LockSlider';
 import { motion, AnimatePresence } from 'motion/react';
-import { Upload } from 'lucide-react';
+import { Upload, Download } from 'lucide-react';
 import { logger } from './utils/logger';
 
 export default function App() {
@@ -35,6 +35,33 @@ export default function App() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<DrawingCanvasRef>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  // PWA Install State
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      logger.info('PWA install prompt captured');
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult: any) => {
+        if (choiceResult.outcome === 'accepted') {
+          logger.info('User accepted the install prompt');
+        } else {
+          logger.info('User dismissed the install prompt');
+        }
+        setDeferredPrompt(null);
+      });
+    }
+  };
 
   useEffect(() => {
     logger.info('App mounted');
@@ -135,8 +162,19 @@ export default function App() {
             </div>
             
             {!imageSrc && (
-               <div className="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-xs font-medium text-white/80">
-                 Select an image to start
+               <div className="flex gap-2">
+                 {deferredPrompt && (
+                   <button 
+                     onClick={handleInstallClick}
+                     className="bg-blue-600/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-blue-500/30 text-xs font-medium text-white flex items-center gap-1.5 hover:bg-blue-600 transition-colors"
+                   >
+                     <Download size={14} />
+                     Install App
+                   </button>
+                 )}
+                 <div className="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-xs font-medium text-white/80">
+                   Select an image to start
+                 </div>
                </div>
             )}
           </div>
