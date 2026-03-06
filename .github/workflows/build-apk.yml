@@ -55,3 +55,14 @@ jobs:
           name: app-debug
           # This is the default path to the APK generated from a debug build
           path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Development Build ${{ github.run_number }}
+          body: 'Auto-generated Android APK from the latest push to the main branch.'
+          prerelease: true
+          files: android/app/build/outputs/apk/debug/app-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
