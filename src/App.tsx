@@ -7,7 +7,7 @@ import { useState, ChangeEvent, useRef, useEffect } from 'react';
 import { CameraView } from './components/CameraView';
 import { OverlayImage } from './components/OverlayImage';
 import { Controls } from './components/Controls';
-import { DrawingCanvas } from './components/DrawingCanvas';
+import { DrawingCanvas, DrawingCanvasRef } from './components/DrawingCanvas';
 import { LockSlider } from './components/LockSlider';
 import { motion, AnimatePresence } from 'motion/react';
 import { Upload } from 'lucide-react';
@@ -33,6 +33,7 @@ export default function App() {
   
   // Dimensions for canvas
   const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<DrawingCanvasRef>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
@@ -114,6 +115,7 @@ export default function App() {
 
       {/* Drawing Layer */}
       <DrawingCanvas 
+        ref={canvasRef}
         width={dimensions.width}
         height={dimensions.height}
         color={drawingColor}
@@ -183,6 +185,8 @@ export default function App() {
             brushSize={brushSize}
             setBrushSize={setBrushSize}
             clearDrawing={() => setClearTrigger(prev => prev + 1)}
+            undoDrawing={() => canvasRef.current?.undo()}
+            redoDrawing={() => canvasRef.current?.redo()}
           />
         </div>
       </div>

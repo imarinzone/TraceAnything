@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
+import { useRef, useEffect, useState, MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent, forwardRef, useImperativeHandle } from 'react';
 import { logger } from '../utils/logger';
 
 interface DrawingCanvasProps {
@@ -10,77 +10,134 @@ interface DrawingCanvasProps {
   clearTrigger: number; // Increment to clear
 }
 
-export function DrawingCanvas({ 
+export interface DrawingCanvasRef {
+  undo: () => void;
+  redo: () => void;
+  clear: () => void;
+}
+
+type Point = { x: number; y: number };
+type Stroke = {
+  points: Point[];
+  color: string;
+  size: number;
+};
+
+export const DrawingCanvas = forwardRef<DrawingCanvasRef, DrawingCanvasProps>(({ 
   width, 
   height, 
   color, 
   brushSize, 
   isEnabled,
   clearTrigger 
-}: DrawingCanvasProps) {
+}, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const lastPos = useRef<{ x: number; y: number } | null>(null);
+  const currentStroke = useRef<Stroke | null>(null);
+  
+  const history = useRef<Stroke[]>([]);
+  const redoStack = useRef<Stroke[]>([]);
 
-  // Handle clearing
-  useEffect(() => {
+  // Expose methods to parent
+  useImperativeHandle(ref, () => ({
+    undo: () => {
+      if (history.current.length === 0) return;
+      const stroke = history.current.pop();
+      if (stroke) {
+        redoStack.current.push(stroke);
+        redraw();
+        logger.info('Undo performed');
+      }
+    },
+    redo: () => {
+      if (redoStack.current.length === 0) return;
+      const stroke = redoStack.current.pop();
+      if (stroke) {
+        history.current.push(stroke);
+        redraw();
+        logger.info('Redo performed');
+      }
+    },
+    clear: () => {
+      history.current = [];
+      redoStack.current = [];
+      redraw();
+    }
+  }));
+
+  const redraw = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    ctx.clearRect(0, 0, width, height);
-    logger.info('Canvas cleared');
-  }, [clearTrigger, width, height]);
 
-  // Handle resize (naive approach - clears canvas on resize, acceptable for MVP)
-  // Ideally we'd save the paths and redraw, but for now let's just keep it simple.
-  // Actually, if width/height changes, the canvas clears. 
-  // We can try to save the image data.
+    ctx.clearRect(0, 0, width, height);
+
+    history.current.forEach(stroke => {
+      if (stroke.points.length < 2) return;
+      
+      ctx.beginPath();
+      ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+      for (let i = 1; i < stroke.points.length; i++) {
+        ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+      }
+      ctx.strokeStyle = stroke.color;
+      ctx.lineWidth = stroke.size;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+    });
+  };
+
+  // Handle clearing via prop (legacy support if needed, but ref.clear is better)
+  useEffect(() => {
+    if (clearTrigger > 0) {
+       history.current = [];
+       redoStack.current = [];
+       redraw();
+       logger.info('Canvas cleared via trigger');
+    }
+  }, [clearTrigger]);
+
+  // Handle resize
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     
-    // Save current content
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = canvas.width;
-    tempCanvas.height = canvas.height;
-    const tempCtx = tempCanvas.getContext('2d');
-    try {
-      tempCtx?.drawImage(canvas, 0, 0);
-    } catch (e) {
-      // Ignore errors if canvas is empty or invalid
-    }
-
     // Resize
     canvas.width = width;
     canvas.height = height;
 
-    // Restore content (scaled or centered? just 0,0 for now)
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      try {
-        ctx.drawImage(tempCanvas, 0, 0);
-      } catch (e) {
-        // Ignore errors
-      }
-    }
+    // Redraw history
+    redraw();
   }, [width, height]);
 
   const startDrawing = (x: number, y: number) => {
     if (!isEnabled) return;
     setIsDrawing(true);
-    lastPos.current = { x, y };
+    currentStroke.current = {
+      points: [{ x, y }],
+      color,
+      size: brushSize
+    };
+    
+    // Clear redo stack on new action
+    redoStack.current = [];
+    
     logger.info('Drawing started', { x, y, color, brushSize });
   };
 
   const draw = (x: number, y: number) => {
-    if (!isDrawing || !isEnabled || !lastPos.current || !canvasRef.current) return;
+    if (!isDrawing || !isEnabled || !currentStroke.current || !canvasRef.current) return;
 
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
 
+    const points = currentStroke.current.points;
+    const lastPoint = points[points.length - 1];
+
     ctx.beginPath();
-    ctx.moveTo(lastPos.current.x, lastPos.current.y);
+    ctx.moveTo(lastPoint.x, lastPoint.y);
     ctx.lineTo(x, y);
     ctx.strokeStyle = color;
     ctx.lineWidth = brushSize;
@@ -88,13 +145,14 @@ export function DrawingCanvas({
     ctx.lineJoin = 'round';
     ctx.stroke();
 
-    lastPos.current = { x, y };
+    currentStroke.current.points.push({ x, y });
   };
 
   const stopDrawing = () => {
-    if (isDrawing) {
+    if (isDrawing && currentStroke.current) {
       setIsDrawing(false);
-      lastPos.current = null;
+      history.current.push(currentStroke.current);
+      currentStroke.current = null;
       logger.info('Drawing stopped');
     }
   };
@@ -136,4 +194,4 @@ export function DrawingCanvas({
       onTouchEnd={handleMouseUp}
     />
   );
-}
+});
