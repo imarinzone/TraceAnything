@@ -14,11 +14,8 @@ coverage/
 # Android
 android/app/build/
 android/.gradle/
-android/capacitor-cordova-android-plugins/
 android/local.properties
 android/*.iml
 android/.idea/
 android/captures/
 android/app/src/main/assets/public/
-android/app/src/main/assets/capacitor.config.json
-android/app/src/main/assets/capacitor.plugins.json
